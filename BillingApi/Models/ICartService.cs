@@ -6,6 +6,6 @@ namespace BillingApi.Models
 {
     public interface ICartService
     {
-        Bill IssueBill(IItemRepository itemRepository, Cart cart);
+        Bill IssueBill(List<(Item dbItem, int qty)> items, string currency);
     }
 }
