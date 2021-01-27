@@ -135,7 +135,7 @@ dotnet run
 * General : 
     * Create a new shopping cart.
 * Sample :
-    * `curl http://localhost:5000/api/cart`
+    * `curl http://localhost:5000/api/carts`
     * Body: 
         `
         {
