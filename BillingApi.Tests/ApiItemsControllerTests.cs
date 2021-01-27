@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using BillingApi.Controllers;
 using BillingApi.Data;
+using BillingApi.Dtos;
 using BillingApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -19,7 +21,7 @@ namespace BillingApi.Tests
             int testId = 5;
             var mock = new Mock<IItemRepository>();
             mock.Setup(repo => repo.GetItemById(It.IsAny<int>())).Returns((Item)null);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
 
             // Act
             var result = controller.GetItem(testId);
@@ -32,19 +34,22 @@ namespace BillingApi.Tests
         public void GetItem_ReturnsOk_ForFoundItem()
         {
             // Arrange
-            int testId = 1;
-            Item testItem = new Item(){Id=testId, Name="Shoes", Price=100, Discount=10};
+            int testId = 5;
+            string testName = "Shoes";
+            Item testItem = new Item(){Id=testId, Name=testName, Price=100, Discount=10};
             var mock = new Mock<IItemRepository>();
+            var mapper_mock = new Mock<IMapper>();
             mock.Setup(repo => repo.GetItemById(testId)).Returns(testItem);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            mapper_mock.Setup(mapper => mapper.Map<ItemDto>(testItem)).Returns(new ItemDto(){Name=testName});
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper_mock.Object);
 
             // Act
             var result = controller.GetItem(testId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var item = Assert.IsType<Item>(okResult.Value);
-            Assert.Equal(testId, item.Id);
+            var item = Assert.IsType<ItemDto>(okResult.Value);
+            Assert.Equal(testName, item.Name);
         }
 
         [Fact]
@@ -58,15 +63,23 @@ namespace BillingApi.Tests
                                     new Item(){Id=3, Name="Pants", Price=200, Discount=10},
                                 };
             var mock = new Mock<IItemRepository>();
+            var mock_mapper = new Mock<IMapper>();
             mock.Setup(repo => repo.GetAllItems()).Returns(items);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            mock_mapper.Setup(mapper => mapper.Map<IEnumerable<ItemDto>>(items))
+                        .Returns(new List<ItemDto>()
+                                    {
+                                        new ItemDto(),
+                                        new ItemDto(),
+                                        new ItemDto()
+                                    });
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mock_mapper.Object);
 
             // Act
             var result = controller.GetItems();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var resItems = Assert.IsType<List<Item>>(okResult.Value);
+            var resItems = Assert.IsType<List<ItemDto>>(okResult.Value);
             Assert.Equal(items.Count(), resItems.Count());
         }
 
@@ -77,7 +90,7 @@ namespace BillingApi.Tests
             List<Item> items = new List<Item>();
             var mock = new Mock<IItemRepository>();
             mock.Setup(repo => repo.GetAllItems()).Returns(items);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
 
             // Act
             var result = controller.GetItems();
@@ -90,18 +103,20 @@ namespace BillingApi.Tests
         public void CreateItem_ReturnsCreate_ForValidItem()
         {
             // Arrange
-            int testId = 1;
-            Item testItem = new Item() {Name="NewItem", Manufacturer="USA", Price=50, Discount=0};
+            ItemDto testItem = new ItemDto() {Name="NewItem", Price=50, Discount=0};
             var mock = new Mock<IItemRepository>();
-            mock.Setup(repo => repo.AddItem(testItem)).Returns(testId);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var mock_mapper = new Mock<IMapper>();
+            mock.Setup(repo => repo.AddItem(new Item())).Returns(It.IsAny<int>());
+            mock_mapper.Setup(mapper => mapper.Map<Item>(testItem)).Returns(new Item());
+            mock_mapper.Setup(mapper => mapper.Map<ItemDto>(It.IsAny<Item>())).Returns(new ItemDto());
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mock_mapper.Object);
             
             // Act
             var result = controller.CreateItem(testItem);
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-            Assert.Equal(testId, createdResult.Value);
+            Assert.IsType<ItemDto>(createdResult.Value);
         }
 
         [Fact]
@@ -109,7 +124,7 @@ namespace BillingApi.Tests
         {
             // Arrange
             var mock = new Mock<IItemRepository>();
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
             controller.ModelState.AddModelError("error", "some error");
 
             // Act
@@ -125,10 +140,10 @@ namespace BillingApi.Tests
             // Assign
             var mock = new Mock<IItemRepository>();
             mock.Setup(repo => repo.GetItemByName(It.IsAny<string>())).Returns(new Item());
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
 
             // Act
-            var result = controller.CreateItem(new Item());
+            var result = controller.CreateItem(new ItemDto());
 
             // Assert
             Assert.IsType<UnprocessableEntityResult>(result.Result);
@@ -141,7 +156,7 @@ namespace BillingApi.Tests
             int testId = 5;
             var mock = new Mock<IItemRepository>();
             mock.Setup(repo => repo.GetItemById(It.IsAny<int>())).Returns((Item)null);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
 
             // Act
             var result = controller.DeleteItem(testId);
@@ -157,42 +172,10 @@ namespace BillingApi.Tests
             int testId = 5;
             var mock = new Mock<IItemRepository>();
             mock.Setup(repo => repo.GetItemById(It.IsAny<int>())).Returns(new Item());
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
+            var controller = new ItemsController(itemRepository: mock.Object, cartService: null, mapper: null);
 
             // Act
             var result = controller.DeleteItem(testId);
-
-            // Assert
-            Assert.IsType<NoContentResult>(result);
-        }
-
-        [Fact]
-        public void PartialUpdateItem_ReturnsNotFound_ForNoItem()
-        {
-            // Arrange
-            int testId = 5;
-            var mock = new Mock<IItemRepository>();
-            mock.Setup(repo => repo.GetItemById(It.IsAny<int>())).Returns((Item)null);
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
-            
-            // Act
-            var result = controller.PartialUpdateItem(testId, new Item());
-
-            // Assert
-            Assert.IsType<NotFoundResult>(result);
-        }
-
-        [Fact]
-        public void PartialUpdateItem_ReturnsNoContent_ForNoItem()
-        {
-            // Arrange
-            int testId = 5;
-            var mock = new Mock<IItemRepository>();
-            mock.Setup(repo => repo.GetItemById(It.IsAny<int>())).Returns(new Item());
-            var controller = new ItemsController(itemRepository: mock.Object, cartService: null);
-            
-            // Act
-            var result = controller.PartialUpdateItem(testId, new Item());
 
             // Assert
             Assert.IsType<NoContentResult>(result);
