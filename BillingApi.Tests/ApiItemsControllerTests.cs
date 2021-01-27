@@ -27,7 +27,7 @@ namespace BillingApi.Tests
             var result = controller.GetItem(testId);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace BillingApi.Tests
             var result = controller.GetItems();
 
             // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace BillingApi.Tests
             var result = controller.CreateItem(item: null);
 
             // Assign
-            Assert.IsType<BadRequestResult>(result.Result);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace BillingApi.Tests
             var result = controller.CreateItem(new ItemDto());
 
             // Assert
-            Assert.IsType<UnprocessableEntityResult>(result.Result);
+            Assert.IsType<ConflictObjectResult>(result.Result);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace BillingApi.Tests
             var result = controller.DeleteItem(testId);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
         }
 
         [Fact]
