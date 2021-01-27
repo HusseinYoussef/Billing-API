@@ -11,6 +11,7 @@ using BillingApi.Data;
 using BillingApi.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace BillingApi
 {
@@ -41,9 +42,11 @@ namespace BillingApi
                         options.UseNpgsql(_config.GetConnectionString("BillAppConnectionString"))
                 );
             }
-            services.AddMvc(options => options.EnableEndpointRouting = false);
+            services.AddMvc(options => options.EnableEndpointRouting = false)
+                    .AddXmlSerializerFormatters();
             services.AddControllers();
-            services.AddScoped<IItemRepository, MockItemRepository>()
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddScoped<IItemRepository, SqlItemRepository>()
                     .AddScoped<ICartService, CartService>();
         }
 
@@ -61,7 +64,7 @@ namespace BillingApi
             );
 
             app.Run(async context => 
-                await context.Response.WriteAsync("Hello World")
+                await context.Response.WriteAsync("Route not found")
             );
         }
     }
