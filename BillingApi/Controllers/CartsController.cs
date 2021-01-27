@@ -7,7 +7,7 @@ using BillingApi.Models;
 namespace BillingApi.Controllers
 {
     [ApiController]
-    [Route("api/cart")]
+    [Route("api/carts")]
     public class CartsController : ControllerBase
     {
         private readonly IItemRepository _itemRepository;
