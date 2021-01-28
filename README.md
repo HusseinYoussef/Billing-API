@@ -130,7 +130,7 @@ dotnet run
     * Returns no content for successful delete.
 * Sample : `curl -X DELETE http://localhost:5000/api/items/1`
 
-### POST /api/cart
+### POST /api/carts
 
 * General : 
     * Create a new shopping cart.
