@@ -80,12 +80,13 @@ dotnet run
     ]
     ```
 
+
 ### GET: /api/items/{id}
 * General: Return an item with the specified id.
 
 * Sample: `curl -X GET http://localhost:5000/api/items/1`
 
-* Resonse:
+* Response:
     ```
     {
         "name": "T-Shirt",
@@ -129,12 +130,14 @@ dotnet run
     * `curl -X PUT http://localhost:5000/api/items/1`
     * Body: `{ "name": "Dress", "price": 300, "discount": 15 }`
 
+
 ### DELETE: /api/items/{id}
 * General:
     * Delete the item with the specified id.
     * Returns no content for successful delete.
 
 * Sample: `curl -X DELETE http://localhost:5000/api/items/1`
+
 
 ### POST: /api/carts
 
