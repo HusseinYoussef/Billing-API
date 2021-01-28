@@ -4,9 +4,9 @@ This is a Billing system that manages items and shopping carts by allowing viewi
 
 ## Functionalities
 
-* View different Items.
-* Create and Update new Items.
-* Delete Items.
+* View different items.
+* Create and Update items.
+* Delete items.
 * Generate a bill for a shopping cart.
 
 ## Stack
